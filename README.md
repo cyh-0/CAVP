@@ -1,6 +1,6 @@
 # A Closer Look at Audio-Visual Semantic Segmentation
 
-The rest of the code and the dataset will be released soon...
+The rest of the code and the dataset will be later...
 
 
 
