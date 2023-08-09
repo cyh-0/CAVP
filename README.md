@@ -8,7 +8,8 @@ Official code for "A Closer Look at Audio-Visual Semantic Segmentation"
 
 
 
-![motivation](./figs/avs_bench-motivation-1.png)
+[<img src="./figs/avs_bench-motivation-1.png" width="500"/>](./figs/avs_bench-motivation-1.png) 
+
 *The TPAVI AVS model tends to be biased to segment specific objects in a scene due to limitations in the training set and in the training process.*
 
 
