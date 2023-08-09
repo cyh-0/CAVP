@@ -8,10 +8,10 @@ Official code for "A Closer Look at Audio-Visual Semantic Segmentation"
 
 
 
-<div class=figure>
+<figure>
     <img src="./figs/avs_bench-motivation-1.png" width="500"/>
     <figcaption>The TPAVI AVS model tends to be biased to segment specific objects in a scene due to limitations in the training set and in the training process.</figcaption>
-</div>
+</figure>
 
 
 
@@ -26,30 +26,31 @@ of the visual objects of the images and audio based on the semantic classes of t
 *Visual comparison between datasets. We show four audio-visual classes, including “female”, “cat”, “dog”, and “car”. The AVSBench-Single+ (left column) provides pixel-level multi-class annotations to the images containing a single sounding object. The proposed VPO benchmarks (center and right columns) pair a subset of the segmented objects in an
 image with relevant audio files to produce pixel-level multi-class annotations.*
 
-<div class=figure>
+<figure>
     <img src="./figs/multi+pie-1.png" width="500"/>
     <figcaption>Data distribution of VPO.</figcaption>
-</div>
+</figure>
+
 
 
 ## Method
 ### Contrastive Audio-visual Pairing
-<div class=figure>
+<figure>
     <img src="./figs/avs_bench-ctr-1.png" width="500"/>
     <figcaption>Illustration of our contrastive learning method based on the original (left column) and shuffled (right column) audio-visual pairs.</figcaption>
-</div>
+</figure>
 
 ## Results
 
 ### Results on VPO
-| Backbone    | Architecture | Method |       | VPO (Single-Source) |       |       | VPO (Multi-Source) |        |
-|-------------|--------------|--------|-------|---------------------|-------|-------|--------------------|--------|
-|             |              |        | FDR   | mIoU                | F1    | FDR   | mIoU               | F1     |
-| D-ResNet50  | TPAVI        |        | 30.64 | 42.44               | 55.22 | 30.82 | 44.08              | 58.14  |
-| D-ResNet50  | DeepLabV3+   |        | 20.41 | 61.21               | 73.29 | 18.64 | 59.58              | 72.46  |
-| D-ResNet101 | DeepLabV3+   |        | 19.47 | 66.26               | 77.34 | 15.72 | 62.91              | 75.41  |
-| HRNetV2-w48 | HRNetV2      |        | 21.64 | 64.42               | 75.27 | 20.86 | 64.18              | 76.49  |
-| HRNetV2-w48 | OCR          |        | 18.49 | 66.38               | 77.45 | 16.58 | 65.62              | 77.29  |
+| Backbone    | Architecture |       | VPO (Single-Source) |       |       | VPO (Multi-Source) |        |
+|-------------|--------------|-------|---------------------|-------|-------|--------------------|--------|
+|             |              | FDR   | mIoU                | F1    | FDR   | mIoU               | F1     |
+| D-ResNet50  | TPAVI        | 30.64 | 42.44               | 55.22 | 30.82 | 44.08              | 58.14  |
+| D-ResNet50  | DeepLabV3+   | 20.41 | 61.21               | 73.29 | 18.64 | 59.58              | 72.46  |
+| D-ResNet101 | DeepLabV3+   | 19.47 | 66.26               | 77.34 | 15.72 | 62.91              | 75.41  |
+| HRNetV2-w48 | HRNetV2      | 21.64 | 64.42               | 75.27 | 20.86 | 64.18              | 76.49  |
+| HRNetV2-w48 | OCR          | 18.49 | 66.38               | 77.45 | 16.58 | 65.62              | 77.29  |
 
 ### Results on AVSBench-Single+
 | AVS Benchmark    | Metrics  | TPAVI    | Ours     |
