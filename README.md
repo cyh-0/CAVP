@@ -42,7 +42,7 @@ image with relevant audio files to produce pixel-level multi-class annotations.*
 
 ## Results
 
-### Results on VPO
+### Results on VPO-SS/MS
 | Backbone    | Architecture |       | SS |       |       |MS |        |
 |-------------|--------------|-------|---------------------|-------|-------|--------------------|--------|
 |             |              | FDR   | mIoU                | F1    | FDR   | mIoU               | F1     |
