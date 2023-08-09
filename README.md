@@ -24,7 +24,8 @@ of the visual objects of the images and audio based on the semantic classes of t
 *Visual comparison between datasets. We show four audio-visual classes, including “female”, “cat”, “dog”, and “car”. The AVSBench-Single+ (left column) provides pixel-level multi-class annotations to the images containing a single sounding object. The proposed VPO benchmarks (center and right columns) pair a subset of the segmented objects in an
 image with relevant audio files to produce pixel-level multi-class annotations.*
 
-![dis](./figs/multi+pie-1.png)
+[<img src="./figs/multi+pie-1.png" width="500"/>](./figs/multi+pie-1.png) 
+
 *Data distribution of VPO*
 
 
@@ -32,7 +33,6 @@ image with relevant audio files to produce pixel-level multi-class annotations.*
 ### Contrastive Audio-visual Pairing
 ![method](./figs/avs_bench-ctr-1.png)
 *Illustration of our contrastive learning method based on the original (left column) and shuffled (right column) audio-visual pairs.*
-
 
 
 ## Results
