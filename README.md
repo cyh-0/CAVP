@@ -43,7 +43,7 @@ image with relevant audio files to produce pixel-level multi-class annotations.*
 ## Results
 
 ### Results on VPO
-| Backbone    | Architecture |        VPO (Single-Source)        |||        VPO (Multi-Source)         |||
+| Backbone    | Architecture |       | SS |       |       |MS |        |
 |-------------|--------------|-------|---------------------|-------|-------|--------------------|--------|
 |             |              | FDR   | mIoU                | F1    | FDR   | mIoU               | F1     |
 | D-ResNet50  | TPAVI        | 30.64 | 42.44               | 55.22 | 30.82 | 44.08              | 58.14  |
@@ -69,10 +69,6 @@ image with relevant audio files to produce pixel-level multi-class annotations.*
 | TPAVI (PVT)      | 29.77 | 35.20   |
 | Ours             | 39.78 | 50.67   |
 
-
-| Header ||
-|--------------|
-| 0 | 1 |
 
 ## Citation
 ```
