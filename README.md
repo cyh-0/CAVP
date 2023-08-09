@@ -41,14 +41,14 @@ image with relevant audio files to produce pixel-level multi-class annotations.*
 ## Results
 
 ### Results on VPO
-| Backbone    | Architecture | Method |       | VPO (Single-Source) |       |       | VPO (Multi-Source) |        |   |
-|-------------|--------------|--------|-------|---------------------|-------|-------|--------------------|--------|---|
-|             |              |        | FDR   | mIoU                | F1    | FDR   | mIoU               | F1     |   |
-| D-ResNet50  | TPAVI        |        | 30.64 | 42.44               | 55.22 | 30.82 | 44.08              | 58.14  |   |
-| D-ResNet50  | DeepLabV3+   |        | 20.41 | 61.21               | 73.29 | 18.64 | 59.58              | 72.46  |   |
-| D-ResNet101 | DeepLabV3+   |        | 19.47 | 66.26               | 77.34 | 15.72 | 62.91              | 75.41  |   |
-| HRNetV2-w48 | HRNetV2      |        | 21.64 | 64.42               | 75.27 | 20.86 | 64.18              | 76.49  |   |
-| HRNetV2-w48 | OCR          |        | 18.49 | 66.38               | 77.45 | 16.58 | 65.62              | 77.29  |   |
+| Backbone    | Architecture | Method |       | VPO (Single-Source) |       |       | VPO (Multi-Source) |        |
+|-------------|--------------|--------|-------|---------------------|-------|-------|--------------------|--------|
+|             |              |        | FDR   | mIoU                | F1    | FDR   | mIoU               | F1     |
+| D-ResNet50  | TPAVI        |        | 30.64 | 42.44               | 55.22 | 30.82 | 44.08              | 58.14  |
+| D-ResNet50  | DeepLabV3+   |        | 20.41 | 61.21               | 73.29 | 18.64 | 59.58              | 72.46  |
+| D-ResNet101 | DeepLabV3+   |        | 19.47 | 66.26               | 77.34 | 15.72 | 62.91              | 75.41  |
+| HRNetV2-w48 | HRNetV2      |        | 21.64 | 64.42               | 75.27 | 20.86 | 64.18              | 76.49  |
+| HRNetV2-w48 | OCR          |        | 18.49 | 66.38               | 77.45 | 16.58 | 65.62              | 77.29  |
 
 ### Results on AVSBench-Single+
 | AVS Benchmark    | Metrics  | TPAVI    | Ours     |
