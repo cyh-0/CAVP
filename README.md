@@ -16,14 +16,18 @@ Official code for "A Closer Look at Audio-Visual Semantic Segmentation"
 
 
 ## Dataset
+### AVSBench-Single+
+Datasets are available here [`AVSBench-Single+`]()*
+
 ### Visual Post-production (VPO)
 We build AVS datasets based on pairs of audio-visual data are obtained by matching images and audio based on the semantic classes
-of the visual objects of the images and audio based on the semantic classes of the visual objects of the images. We leverage labelled image data from **COCO**, and audo source from **VGGSound**. Please note that we are excluding images containing multiple instances of the same class in the dataset due to the absence of spatial information from VGGSound.
+of the visual objects of the images and audio based on the semantic classes of the visual objects of the images. We leverage labelled image data from **COCO**, and audio source from **VGGSound**. Please note that we are excluding images containing multiple instances of the same class in the dataset due to the absence of spatial information from VGGSound.
 
-*VPO dataset is available here [`VPO`](https://drive.google.com/drive/folders/19xzsxeFRnIbRhRxRRcnzJhftovofbUp4?usp=drive_link)*
+*VPO datasets are available here [`VPO-SS`](https://drive.google.com/file/d/1gMIoWFDyXXknH7SxniggVxPTyugEnhjl/view?usp=drive_link)*
+[`VPO-MS`](https://drive.google.com/file/d/1Qk_SDqWuUzUQ5KZjOBk9wy7_L4y24qqF/view?usp=drive_link)*
 
 ![vpo](./figs/dataset_final-1.png)
-*Visual comparison between datasets. We show four audio-visual classes, including “female”, “cat”, “dog”, and “car”. The AVSBench-Single+ (left column) provides pixel-level multi-class annotations to the images containing a single sounding object. The proposed VPO benchmarks (center and right columns) pair a subset of the segmented objects in an
+*Visual comparison between datasets. We show four audio-visual classes, including “female”, “cat”, “dog”, and “car”. The AVSBench-Single+ (left column) provides pixel-level multi-class annotations to the images containing a single-sounding object. The proposed VPO benchmarks (center and right columns) pair a subset of the segmented objects in an
 image with relevant audio files to produce pixel-level multi-class annotations.*
 
 <figure>
