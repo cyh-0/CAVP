@@ -1,4 +1,4 @@
-# A Closer Look at Audio-Visual Semantic Segmentation
+#[CVPR2024] A Closer Look at Audio-Visual Semantic Segmentation
 Official code for "A Closer Look at Audio-Visual Semantic Segmentation"
 
 
@@ -12,8 +12,6 @@ Official code for "A Closer Look at Audio-Visual Semantic Segmentation"
     <img src="./figs/avs_bench-motivation-1.png" width="500"/>
     <figcaption>The TPAVI AVS model tends to be biased to segment specific objects in a scene due to limitations in the training set and in the training process.</figcaption>
 </figure>
-
-
 
 ## Dataset
 ### AVSBench-Single+
