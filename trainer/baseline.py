@@ -1,3 +1,4 @@
+import os
 from abc import abstractmethod
 
 import torch
@@ -7,21 +8,15 @@ import torch.optim
 import torch.utils.data
 import torch.utils.data.distributed
 import torchaudio
+import wandb
+from loguru import logger
 from tqdm import tqdm
 
 from engine.utils import DeNormalize
-from utils import sourcesep
-from loguru import logger
-from loss.losser import Losser
-import wandb
-import os
 from loss.contrastive_aud import ContrastLoss
-from einops import rearrange
-from utils.eval_utils import MIoU
-from utils.eval_utils import ForegroundDetect
-from visualisation.tsne import tsne_plotter
-from utils import ddp_utils
-from models.mm_fusion import SoundBank
+from loss.losser import Losser
+from utils import sourcesep
+from utils.eval_utils import ForegroundDetect, MIoU
 
 
 class BASELINE:

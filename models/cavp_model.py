@@ -72,7 +72,7 @@ class ProjectionHead(nn.Module):
         return self.proj(x)
 
 
-class MMFusion(nn.Module):
+class CAVP(nn.Module):
     def __init__(
         self,
         backbone,
@@ -83,7 +83,7 @@ class MMFusion(nn.Module):
         visual_backbone=50,
         args=None,
     ):
-        super(MMFusion, self).__init__()
+        super(CAVP, self).__init__()
         seg_model = args.seg_model
         last_three_dilation_stride = args.last_three_dilation_stride
         logger.critical(f"LOADING SEG MODEL <<{seg_model}>>")

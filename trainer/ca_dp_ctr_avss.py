@@ -7,29 +7,27 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy
 import PIL
-import torch, torchvision
+import torch
 import torch.nn as nn
 import torch.nn.parallel
 import torch.optim
 import torch.utils.data
 import torch.utils.data.distributed
 import torchaudio
+import torchvision
+import wandb
 from einops import rearrange
 from loguru import logger
 from PIL import Image
 from tqdm import tqdm
 
-import wandb
 from engine.utils import DeNormalize
 from loss.contrastive_aud import ContrastLoss
 from loss.losser import Losser
-from models.mm_fusion import SoundBank
 from utils import ddp_utils, sourcesep
 from utils.eval_utils import ForegroundDetect, MIoU
 from visualisation.tsne import tsne_plotter
-from sklearn.metrics import roc_auc_score, auc, precision_recall_curve
-from utils.eval_utils import pr_auc_score
-from utils.eval_utils import get_ml_auc
+
 
 def mask_iou(pred, target, eps=1e-7, size_average=True):
     r"""

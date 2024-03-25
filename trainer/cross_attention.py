@@ -20,8 +20,6 @@ from einops import rearrange
 from utils.eval_utils import MIoU
 from utils.eval_utils import ForegroundDetect
 from visualisation.tsne import tsne_plotter
-from utils import ddp_utils
-from models.mm_fusion import SoundBank
 
 
 class BASELINE:

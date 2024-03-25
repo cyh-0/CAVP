@@ -1,3 +1,4 @@
+import os
 from abc import abstractmethod
 
 import torch
@@ -7,22 +8,17 @@ import torch.optim
 import torch.utils.data
 import torch.utils.data.distributed
 import torchaudio
+import wandb
+from einops import rearrange
+from loguru import logger
 from tqdm import tqdm
 
 from engine.utils import DeNormalize
-from utils import sourcesep
-from loguru import logger
-from loss.losser import Losser
-import wandb
-import os
 from loss.contrastive_aud import ContrastLoss
-from einops import rearrange
-from utils.eval_utils import MIoU
-from utils.eval_utils import ForegroundDetect
+from loss.losser import Losser
+from utils import sourcesep
+from utils.eval_utils import ForegroundDetect, MIoU
 from visualisation.tsne import tsne_plotter
-from utils import ddp_utils
-from models.mm_fusion import SoundBank
-import torch.nn.functional as F
 
 # rewrite replace_value to for loop
 
@@ -300,7 +296,7 @@ class BASELINE:
             # miou, acc = miou_measure(avl_map_logits, pix_label)
             tbar.set_description("epoch ({}) | mIoU {} Acc {}".format(epoch, miou, acc))
 
-        from sklearn.metrics import roc_auc_score, average_precision_score
+        from sklearn.metrics import average_precision_score, roc_auc_score
         all_preds = torch.cat(pred_list).cpu().numpy()
         all_gts = torch.cat(target_list).cpu().numpy()
         all_auc = roc_auc_score(all_gts, all_preds)

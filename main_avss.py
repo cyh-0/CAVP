@@ -101,9 +101,9 @@ def main(local_rank, ngpus_per_node, hyp_param_):
             out_plane=2048 if hyp_param_.visual_backbone == 50 else 512,
         )
     else:
-        from models.mm_fusion import MMFusion
+        from models.cavp_model import CAVP
 
-        model_v = MMFusion(
+        model_v = CAVP(
             hyp_param_.visual_backbone,
             hyp_param_.visual_backbone_pretrain_path,
             num_classes=hyp_param_.num_classes,

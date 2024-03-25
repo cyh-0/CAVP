@@ -20,13 +20,7 @@ from einops import rearrange
 from utils.eval_utils import MIoU
 from utils.eval_utils import ForegroundDetect
 from visualisation.tsne import tsne_plotter
-from utils import ddp_utils
-from models.mm_fusion import SoundBank
-import cv2
-import PIL
-import matplotlib.pyplot as plt
-import numpy
-from PIL import Image
+
 
 def mask_iou(pred, target, eps=1e-7, size_average=True):
     r"""
