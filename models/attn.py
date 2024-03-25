@@ -38,7 +38,6 @@ class PatchEmbed(nn.Module):
         x = self.norm(x)
         return x
 
-
 class Attention(nn.Module):
     def __init__(
         self,
@@ -71,7 +70,7 @@ class Attention(nn.Module):
         )
         return out[0]
     
-    def forward(self, x_q, x_k, x_v):
+    def forward(self, x_q, x_k, x_v, attn_mask=None, size=None):
         B, N, C = x_q.shape
     
         q = self.projection(x_q, self.q)
@@ -79,16 +78,19 @@ class Attention(nn.Module):
         v = self.projection(x_v, self.v)
 
         attn = (q @ k.transpose(-2, -1)) * self.scale 
-        attn = torch.sigmoid(attn) 
-        # attn = F.cosine_similarity(q, k, dim=-1).unsqueeze(-1) * self.scale 
-        # denominator = torch.norm(q, dim=-1, keepdim=True) * torch.norm(k, dim=-1,keepdim=True).transpose(-1, -2)    
-        # denominator = torch.maximum(denominator, torch.ones_like(denominator) * 1e-8)
-        # attn = attn / denominator
 
-        # attn_min = torch.min(attn, dim=2, keepdim=True)[0]
-        # attn_max = torch.max(attn, dim=2, keepdim=True)[0]
-        # attn = (attn - attn_min ) / ( attn_max - attn_min)
-        attn = self.attn_drop(attn)
+
+        if attn_mask is not None:
+            attn_mask = F.interpolate(
+                attn_mask,
+                size=size,
+                mode="bilinear",
+                align_corners=False,
+            )
+            attn_mask = rearrange(attn_mask, "b n h w -> b n (h w)").unsqueeze(-1)
+            attn = attn.masked_fill(attn_mask == 0, -1e9)
+
+        attn = self.attn_drop(torch.sigmoid(attn))
         # ####################
         """
             Attention map:
@@ -117,6 +119,7 @@ class Block(nn.Module):
         drop_path=0.0,
         act_layer=nn.GELU,
         norm_layer=nn.LayerNorm,
+        mode="CA"
     ):
         super().__init__()
         self.norm1 = norm_layer(dim)
@@ -138,24 +141,34 @@ class Block(nn.Module):
             act_layer=act_layer,
             drop=drop,
         )
+        self.forward_method = self.forward_ca if mode == "CA" else self.forward_sa
 
-    def SDPAttention(self, q, k, v):
-        output, attn_ = self.drop_path(self.attn(q, k, v))
+    def SDPAttention(self, q, k, v, attn_mask=None, size=None):
+        output, attn_ = self.drop_path(self.attn(q, k, v, attn_mask=attn_mask, size=size))
         q = q + output
         q = q + self.drop_path(self.mlp(self.norm2(q)))
         return q, attn_
 
-    def forward(self, pack):
-        f_v, f_a = pack["visual"], pack["audio"]
+    def forward_ca(self, x, attn_mask=None, size=None):
+        f_v, f_a = x["visual"], x["audio"]
         f_v = self.norm1(f_v)
         f_a = self.norm1(f_a)
 
         # attn(q, k, v)
         # Attention on VISUAL feature based on AUDIO feature
-        f_v, attn_v = self.SDPAttention(f_v, f_a, f_a)
+        f_v, attn_v = self.SDPAttention(f_v, f_a, f_a, attn_mask, size=size)
         # Attention on AUDIO feature based on VISUAL feature
         f_a, attn_a = self.SDPAttention(f_a, f_v, f_v)
         return f_v, f_a, attn_v
+
+    def forward_sa(self, x, attn_mask=None, size=None):
+        f_v = self.norm1(x)
+        # attn(q, k, v)
+        f_v, attn_v = self.SDPAttention(f_v, f_v, f_v)
+        return f_v, attn_v
+
+    def forward(self, pack, **kwargs):
+        return self.forward_method(pack, **kwargs)
 
 class CROSS_ATTENTION(nn.Module):
     def __init__(
@@ -209,13 +222,14 @@ class CROSS_ATTENTION(nn.Module):
                     drop_path=0,
                     norm_layer=nn.LayerNorm,
                     act_layer=nn.GELU,
+                    mode="CA"
                 )
                 for i in range(depth)
             ]
         )
         self.norm = nn.LayerNorm(embed_dim)
 
-    def forward(self, f_v, f_a):
+    def forward(self, f_v, f_a, attn_mask=None, size=None):
         f_v = self.patch_embed_v(f_v)
         f_a = self.patch_embed_a(f_a)
         # f_v = self.pos_drop(f_v + self.pos_embed_v)
@@ -224,8 +238,68 @@ class CROSS_ATTENTION(nn.Module):
         f_a = self.pos_drop(f_a)
         for layer in self.blocks:
             f_in = {"visual":f_v,"audio":f_a}
-            f_v, f_a, attn_v = layer(f_in)
+            f_v, f_a, attn_v = layer(f_in, attn_mask=attn_mask, size=size)
         f_v = self.norm(f_v)
         # f_a2v = self.norm(f_a2v)
         return f_v, f_a, attn_v
+        # return f_v, torch.cat((f_a, f_a2v), dim=1)
+
+
+class SELF_ATTENTION(nn.Module):
+    def __init__(
+        self,
+        embed_dim=768,
+        depth=2,
+        num_heads=4,
+        mlp_ratio=4.0,
+        qkv_bias=False,
+        qk_scale=None,
+        drop=0.0,
+        attn_drop=0.0,
+        drop_path=0.0,
+        act_layer=nn.GELU,
+        norm_layer=nn.LayerNorm,
+        drop_rate=0.0,
+        attn_drop_rate=0.0,
+        drop_path_rate=0.0,
+        dim_in=1280,
+    ):
+        super().__init__()
+
+        self.patch_embed = PatchEmbed(
+            img_size=(128, 128), dim_in=dim_in, embed_dim=embed_dim
+        )
+        self.pos_embed = nn.Parameter(
+            torch.zeros(1, self.patch_embed.num_patches, embed_dim)
+        )
+        self.pos_drop = nn.Dropout(p=drop_rate)
+
+        self.blocks = nn.Sequential(
+            *[
+                Block(
+                    dim=embed_dim,
+                    num_heads=num_heads,
+                    mlp_ratio=mlp_ratio,
+                    qkv_bias=qkv_bias,
+                    qk_scale=qk_scale,
+                    drop=drop_rate,
+                    attn_drop=attn_drop_rate,
+                    drop_path=0,
+                    norm_layer=nn.LayerNorm,
+                    act_layer=nn.GELU,
+                    mode="SA",
+                )
+                for i in range(depth)
+            ]
+        )
+        self.norm = nn.LayerNorm(embed_dim)
+
+    def forward(self, f_v):
+        f_v = self.patch_embed(f_v)
+        f_v = self.pos_drop(f_v)
+        for layer in self.blocks:
+            f_v, attn_v = layer(f_v)
+        f_v = self.norm(f_v)
+        # f_a2v = self.norm(f_a2v)
+        return f_v, attn_v
         # return f_v, torch.cat((f_a, f_a2v), dim=1)

@@ -57,29 +57,6 @@ class Losser(nn.Module):
         self.loss_av_contrast = AVContrast(0.1, local_rank)
         self.local_rank = local_rank
 
-    def forward(self, output, pix_label):
+    def forward(self, output, pix_label, pack_=None):
         l_ce = self.loss_ce(output, pix_label)
-
-        # multi_label_y = [F.one_hot(item, self.num_classes).sum(0) for item in target]
-        # multi_label_y = torch.stack(multi_label_y).to(output.device)
-        # multi_label_y[:, 0] = 0
-        # loss_aud_cls = self.loss_ce_audio(aud_pred, multi_label_y)
-        loss_aud_cls = torch.tensor([0.0], device=self.local_rank)
-
-        # target = [item[item != 0] for item in target]
-        # target = torch.stack(target).view(-1)
-
-        # Global contrastive learning between feature
-        # norm_f = F.normalize(f_a_a2v, dim=-1)
-        # l_contrast_global = self.loss_supcl(norm_f, target)
-        l_contrast_global = torch.tensor([0.0], device=self.local_rank)
-
-        # Pixel contrastive learning
-        # l_contrast_pixel = self.loss_contrastive(v_proj, predict=output, labels=pix_label)
-        l_contrast_pixel = torch.tensor([0.0], device=self.local_rank)
-
-        # Mask contrastive learning
-        # l_contrast_av = self.loss_av_contrast(v_proj, a_proj, labels=pix_label)
-        l_contrast_av = torch.tensor([0.0], device=self.local_rank)
-
-        return l_ce, l_contrast_global, l_contrast_pixel, loss_aud_cls, l_contrast_av
+        return l_ce

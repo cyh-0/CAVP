@@ -7,7 +7,7 @@ from models.visual.deeplabv3.encoder_decoder import Backbone
 from loguru import logger
 
 class AudioModel(torch.nn.Module):
-    def __init__(self, backbone, pretrain_path, out_plane, num_classes=2):
+    def __init__(self, backbone, pretrain_path, out_plane, num_classes=2, in_plane=1):
         super(AudioModel, self).__init__()
         if backbone == "vgg":
             self.backbone = VGG(out_plane)
@@ -19,7 +19,7 @@ class AudioModel(torch.nn.Module):
             logger.warning(f'==> Load pretrained ResNet18 for Audio')
             self.backbone = resnet18(True)
             self.backbone.conv1 = nn.Conv2d(
-                1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
+                in_plane, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
             )
             self.backbone.avgpool = nn.AdaptiveMaxPool2d((1, 1))
             self.backbone.fc = nn.Linear(512, out_plane)

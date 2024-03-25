@@ -19,6 +19,17 @@ def pr_auc_score(y_true, y_pred):
     return pr_auc
 
 
+def get_performance(miou_measure_in, fg_measure_in, class_list=None):
+    final_pix_metrics = miou_measure_in.get_metric_results(class_list)
+    final_detect_metrics = fg_measure_in.get_metric_results(class_list)
+    v_miou = final_pix_metrics[0]
+    v_acc = final_pix_metrics[1]
+    v_fd = final_detect_metrics[0]
+    v_f1 = final_detect_metrics[1]
+    v_f03 = final_detect_metrics[2]
+    return v_miou, v_acc, v_fd, v_f1, v_f03
+
+
 class MIoU(object):
     def __init__(self, num_classes, ignore_index, local_rank):
         self.num_classes = num_classes
@@ -27,10 +38,15 @@ class MIoU(object):
         self.inter, self.union = 0, 0
         self.correct, self.label = 0, 0
         self.iou = numpy.array([0 for _ in range(num_classes)])
-        self.acc = numpy.array([0 for _ in range(num_classes)])
+        self.acc = 0.0
 
-    def get_metric_results(self):
-        return numpy.round(self.iou.mean().item(), 4), numpy.round(self.acc, 4)
+    def get_metric_results(self, class_list=None):
+        if class_list is None:
+            return numpy.round(self.iou.mean().item(), 4), \
+                   numpy.round(self.acc, 4)
+        else:
+            return numpy.round(self.iou[class_list].mean().item(), 4), \
+                   numpy.round(self.acc, 4)
 
     def __call__(self, x, y):
         curr_correct, curr_label, curr_inter, curr_union = self.calculate_current_sample(x, y)
@@ -87,13 +103,9 @@ class ForegroundDetect(object):
         self.ignore = ignore_class
         self.local_rank = local_rank
         self.confusion_matrix_ = numpy.zeros((num_classes, num_classes))
-        # self.confusion_matrix_1 = torch.zeros((num_classes, num_classes)).cuda(local_rank)
-        self.cal_cf_matrix = torchmetrics.ConfusionMatrix(num_classes=self.num_classes, task="multiclass",
-                                                          ignore_index=ignore_class).cuda(local_rank)
 
     def _fast_hist(self, label_true, label_pred, n_class):
         mask = (label_true >= 0) & (label_true < n_class)
-        mask &= (label_pred >= 0) & (label_pred < n_class)
 
         if self.ignore is not None:
             mask = mask & (label_true != self.ignore)
@@ -109,7 +121,7 @@ class ForegroundDetect(object):
         score = ((1+beta2)*tp)/((1+beta2)*tp+beta2*fn+fp)
         return torch.nanmean(score)
 
-    def get_metric_results(self):
+    def get_metric_results(self, class_list=None):
         # the diagonal of the matrix denotes the matching true positive
         self.confusion_matrix_ = torch.tensor(self.confusion_matrix_).cuda(self.local_rank)
         tp = torch.diag(self.confusion_matrix_)
@@ -119,6 +131,11 @@ class ForegroundDetect(object):
         fn = self.confusion_matrix_.sum(dim=1) - tp
         # the rest are tn.
         # tn = confusion_matrix_.sum() - (current_fp + current_fn + current_tp)
+
+        if class_list is not None:
+            tp = tp[class_list]
+            fp = fp[class_list]
+            fn = fn[class_list]
 
         # https://en.wikipedia.org/wiki/False_discovery_rate
         fdr = torch.nanmean(fp/(fp+tp))
@@ -136,107 +153,4 @@ class ForegroundDetect(object):
         y = y.squeeze().cpu().detach().numpy()
         for lt, lp in zip(y, y_hat):
             self.confusion_matrix_ += self._fast_hist(lt.flatten(), lp.flatten(), self.num_classes)
-
-        # self.confusion_matrix_1 += self.cal_cf_matrix(torch.argmax(y_hat, dim=1).flatten().cuda(self.local_rank),
-        #                                              y.flatten().cuda(self.local_rank))
-
-#
-# class ForegroundDetect(object):
-#     def __init__(self, num_classes, ignore_classes):
-#         self.in_scores = []
-#         self.out_scores = []
-#         self.ap = .0
-#         self.roc = .0
-#         self.fpr = .0
-#
-#     def get_metric_results(self):
-#         curr_auroc, curr_aupr, curr_fpr = self.calculate_metrics(numpy.array(self.out_scores), numpy.array(self.in_scores))
-#         self.ap = numpy.mean(curr_aupr)
-#         self.roc = numpy.mean(curr_auroc)
-#         self.fpr = numpy.mean(curr_fpr)
-#         return numpy.round(self.fpr, 4), numpy.round(self.ap, 4), numpy.round(self.roc, 4)
-#
-#     def __call__(self, y_hat, y):
-#         # calculates the confident based on the foreground softmax score
-#         # scores = torch.sum(torch.softmax(y_hat, dim=1)[:, 1:], dim=1)
-#         scores = y_hat * 1.
-#         # flatten the score
-#         self.in_scores += scores[y == 0].flatten().cpu().tolist()
-#         self.out_scores += scores[y > 0].flatten().cpu().tolist()
-#         return 0, 0, 0
-#         # calculate current metrics
-#
-#     def calculate_metrics(self, _pos, _neg, recall_level=0.95):
-#         pos = numpy.array(_pos[:]).reshape((-1, 1))
-#         neg = numpy.array(_neg[:]).reshape((-1, 1))
-#         examples = numpy.squeeze(numpy.vstack((pos, neg)))
-#         labels = numpy.zeros(len(examples), dtype=numpy.int32)
-#         labels[:len(pos)] += 1
-#         auroc_ = sklearn.metrics.roc_auc_score(labels, examples)
-#         aupr_ = sklearn.metrics.average_precision_score(labels, examples)
-#         fpr_ = self.fpr_at_recall(labels, examples, recall_level)
-#         return auroc_, aupr_, fpr_
-#
-#     def fpr_at_recall(self, y_true, y_score, recall_level, pos_label=None):
-#         classes = numpy.unique(y_true)
-#         if (pos_label is None and
-#                 not (numpy.array_equal(classes, [0, 1]) or
-#                      numpy.array_equal(classes, [-1, 1]) or
-#                      numpy.array_equal(classes, [0]) or
-#                      numpy.array_equal(classes, [-1]) or
-#                      numpy.array_equal(classes, [1]))):
-#             raise ValueError("Data is not binary and pos_label is not specified")
-#         elif pos_label is None:
-#             pos_label = 1.
-#
-#         # make y_true a boolean vector
-#         y_true = (y_true == pos_label)
-#
-#         # sort scores and corresponding truth values
-#         desc_score_indices = numpy.argsort(y_score, kind="mergesort")[::-1]
-#         y_score = y_score[desc_score_indices]
-#         y_true = y_true[desc_score_indices]
-#
-#         # y_score typically has many tied values. Here we extract
-#         # the indices associated with the distinct values. We also
-#         # concatenate a value for the end of the curve.
-#         distinct_value_indices = numpy.where(numpy.diff(y_score))[0]
-#         threshold_idxs = numpy.r_[distinct_value_indices, y_true.size - 1]
-#
-#         # accumulate the true positives with decreasing threshold
-#         tps = self.stable_cumsum(y_true)[threshold_idxs]
-#         fps = 1 + threshold_idxs - tps  # add one because of zero-based indexing
-#
-#         thresholds = y_score[threshold_idxs]
-#
-#         recall = tps / tps[-1]
-#
-#         last_ind = tps.searchsorted(tps[-1])
-#         sl = slice(last_ind, None, -1)  # [last_ind::-1]
-#         recall, fps, tps, thresholds = numpy.r_[recall[sl], 1], numpy.r_[fps[sl], 0], numpy.r_[tps[sl], 0], thresholds[sl]
-#
-#         cutoff = numpy.argmin(numpy.abs(recall - recall_level))
-#
-#         return fps[cutoff] / (numpy.sum(numpy.logical_not(y_true)))
-#
-#     @staticmethod
-#     def stable_cumsum(arr, rtol=1e-05, atol=1e-08):
-#         """Use high precision for cumsum and check that final value matches sum
-#         Parameters
-#         ----------
-#         arr : array-like
-#             To be cumulatively summed as flat
-#         rtol : float
-#             Relative tolerance, see ``numpy.allclose``
-#         atol : float
-#             Absolute tolerance, see ``numpy.allclose``
-#         """
-#         out = numpy.cumsum(arr, dtype=numpy.float64)
-#         expected = numpy.sum(arr, dtype=numpy.float64)
-#         if not numpy.allclose(out[-1], expected, rtol=rtol, atol=atol):
-#             raise RuntimeError('cumsum was found to be unstable: '
-#                                'its last element does not correspond to sum')
-#         return out
-
-
 

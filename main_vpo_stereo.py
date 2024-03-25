@@ -1,12 +1,8 @@
-import argparse
 import os
 import random
-import time
 
 import numpy
 import torch
-import torch.backends.cudnn as cudnn
-import torch.distributed as dist
 import torch.multiprocessing as mp
 import torch.nn as nn
 import torch.optim
@@ -16,7 +12,6 @@ import wandb
 from easydict import EasyDict
 from loguru import logger
 from torch.nn.parallel import DistributedDataParallel as DDP
-from tqdm import tqdm
 
 from config.flags import add_tag, load_args_and_config
 from engine.engine import Engine
@@ -63,6 +58,10 @@ def set_group_lr(model_v, hyp_param_):
         param_lists_v.append(
             {"params": model_v.cross_att.parameters(), "lr": hyp_param_.lr * 1}
         )
+        # for module in model_v.business_layers_ctr:
+        #     param_lists_v = group_weight(
+        #         param_lists_v, module, torch.nn.BatchNorm2d, hyp_param_.lr * 1
+        #     )
     for module in model_v.segment.business_layer:
         param_lists_v = group_weight(
             param_lists_v, module, torch.nn.BatchNorm2d, hyp_param_.lr * 10.0
@@ -86,31 +85,18 @@ def main(local_rank, ngpus_per_node, hyp_param_):
         hyp_param_.vpo_num_classes if hyp_param_.use_vpo else hyp_param_.num_classes
     )
 
-    if hyp_param_.use_baseline:
-        model_v = VisualModel(
-            hyp_param_.visual_backbone,
-            hyp_param_.visual_backbone_pretrain_path,
-            num_classes=hyp_param_.num_classes,
-            seg_model=hyp_param_.seg_model,
-            last_three_dilation_stride=hyp_param_.last_three_dilation_stride,
-        )
-        model_a = AudioModel(
-            hyp_param_.audio_backbone,
-            hyp_param_.audio_backbone_pretrain_path,
-            out_plane=2048 if hyp_param_.visual_backbone == 50 else 512,
-        )
-    else:
-        from models.cavp_model import CAVP
+    from models.cavp_model import CAVP
 
-        model_v = CAVP(
-            hyp_param_.visual_backbone,
-            hyp_param_.visual_backbone_pretrain_path,
-            num_classes=hyp_param_.num_classes,
-            audio_backbone_pretrain_path=hyp_param_.audio_backbone_pretrain_path,
-            visual_backbone=hyp_param_.visual_backbone,
-            args=hyp_param_,
-        )
-        model_a = model_v.audio_backbone
+    model_v = CAVP(
+        hyp_param_.visual_backbone,
+        hyp_param_.visual_backbone_pretrain_path,
+        num_classes=hyp_param_.num_classes,
+        audio_backbone_pretrain_path=hyp_param_.audio_backbone_pretrain_path,
+        visual_backbone=hyp_param_.visual_backbone,
+        args=hyp_param_,
+        in_plane=2,
+    )
+    model_a = model_v.audio_backbone
 
     num_param = sum(p.numel() for p in model_v.parameters() if p.requires_grad)
     MODEL_PARAMS = numpy.round(num_param / 1e6, 4)
@@ -148,28 +134,42 @@ def main(local_rank, ngpus_per_node, hyp_param_):
         model_v = nn.DataParallel(model_v, device_ids=["cuda:0"])
         model_a = nn.DataParallel(model_a, device_ids=["cuda:0"])
 
+    import pandas
 
-    from dataset.avss.avss_datasets import AVSSDataset
+    if hyp_param_.setup == "vpo_ss":
+        df_name_ = "vpo_ss_data_stereo.csv"
+    elif hyp_param_.setup == "vpo_ms":
+        df_name_ = "vpo_ms_data_stereo.csv"
+    elif hyp_param_.setup == "vpo_msmi":
+        df_name_ = "vpo_msmi_data_stereo.csv"
+    else:
+        raise ValueError
     
-    train_dataset = AVSSDataset(args=hyp_param_, mode="train")
-    test_dataset = AVSSDataset(args=hyp_param_, mode="test")
-    wandb_.pallete = train_dataset.dataset_v.pallete
-    
-    # Data
-    train_loader = torch.utils.data.DataLoader(train_dataset,
-                                                batch_size=hyp_param_.batch_size,
-                                                shuffle=True,
-                                                num_workers=hyp_param_.num_workers,
-                                                pin_memory=True)
-    test_loader = torch.utils.data.DataLoader(test_dataset,
-                                                batch_size=1,
-                                                shuffle=False,
-                                                num_workers=hyp_param_.num_workers,
-                                                pin_memory=True)
+    csv_path = os.path.join(hyp_param_.vpo_data_path, df_name_)
 
+    logger.warning(f"Using <<{df_name_}>>")
+    csv_ = pandas.read_csv(csv_path)
+    if hyp_param_.setup == "vpo_ms" or hyp_param_.setup == "vpo_msmi":
+        from dataset.vpo_stereo.multi_source.av_datasets import AudioVisualDataset
+        from dataset.vpo_stereo.multi_source.visual.visual_dataset import \
+            prepare_train_data
+    else:
+        from dataset.vpo_stereo.single_source.av_datasets import AudioVisualDataset
+        from dataset.vpo_stereo.single_source.visual.visual_dataset import \
+            prepare_train_data
+    if hyp_param_.use_vpo:
+        csv_ = prepare_train_data(csv_.copy(), hyp_param_)
 
-    from trainer.trainer_cavp_avss_image import CAVP_TRAINER
-
+    train_dataset = AudioVisualDataset(
+        args=hyp_param_, mode="train", dataframe=csv_[csv_["split"] == "train"]
+    )
+    # val_dataset = AudioVisualDataset(
+    #     args=hyp_param_, mode="test", dataframe=csv_[csv_["split"] == "val"]
+    # )
+    test_dataset = AudioVisualDataset(
+        args=hyp_param_, mode="test", dataframe=csv_[csv_["split"] == "test"]
+    )
+    # val_csv_ = csv_[csv_['split'] == 'val']
     final_batch_size = hyp_param_.batch_size * hyp_param_.gpus
     lr_policy = WarmUpPolyLR(
         hyp_param_.lr,
@@ -177,6 +177,40 @@ def main(local_rank, ngpus_per_node, hyp_param_):
         int(len(train_dataset) / final_batch_size) * hyp_param_.epochs,
         len(train_dataset) // final_batch_size * hyp_param_.warm_up_epoch,
     )
+    train_sampler = (
+        torch.utils.data.distributed.DistributedSampler(train_dataset)
+        if hyp_param_.ddp
+        else None
+    )
+
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset,
+        batch_size=hyp_param_.batch_size,
+        shuffle=(train_sampler is None),
+        num_workers=hyp_param_.num_workers,
+        pin_memory=True,
+        sampler=train_sampler,
+        drop_last=True,
+    )
+    # val_loader = torch.utils.data.DataLoader(
+    #     val_dataset,
+    #     batch_size=1,
+    #     shuffle=False,
+    #     num_workers=hyp_param_.num_workers,
+    #     pin_memory=True,
+    #     drop_last=False,
+    # )
+    test_loader = torch.utils.data.DataLoader(
+        test_dataset,
+        batch_size=1,
+        shuffle=False,
+        num_workers=hyp_param_.num_workers,
+        pin_memory=True,
+        drop_last=False,
+    )
+
+    from trainer.trainer_cavp_vpo_stereo import CAVP_TRAINER
+
     trainer = CAVP_TRAINER(
         hyp_param_,
         train_loader,
@@ -184,6 +218,7 @@ def main(local_rank, ngpus_per_node, hyp_param_):
         visual_tool=wandb_,
         lr_scheduler=lr_policy,
     )
+    
 
     for epoch in range(0, hyp_param_.epochs):
         engine.register_state(
@@ -196,8 +231,10 @@ def main(local_rank, ngpus_per_node, hyp_param_):
         if hyp_param_.ddp:
             train_loader.sampler.set_epoch(epoch)
         trainer.train(model_v, model_a, optimizer_v, optimizer_a, epoch, train_loader)
+
         if local_rank <= 0:
-            trainer.validation(model_v, model_a, epoch, test_loader)
+            if epoch % 5 == 0 or epoch >= 30:
+                trainer.validation(model_v, model_a, epoch, test_loader)
         ddp_utils.barrier(hyp_param_.ddp)
 
     if hyp_param_.local_rank <= 0:
@@ -205,9 +242,12 @@ def main(local_rank, ngpus_per_node, hyp_param_):
 
 
 if __name__ == "__main__":
-    logger.warning("RUNNING AVSS")
+    logger.warning("RUNNING ON STEREO AUDIO")
     args, config = load_args_and_config()
+    args.tags = add_tag(args.tags, "stereo")
+    args.tags = add_tag(args.tags, "ours")
     hyp_param = EasyDict(config)
+    # hyp_param = EasyDict({**vars(args), **config})
     hyp_param.update(**vars(args))
     # adjust value for multi-gpus training.
     hyp_param.lr *= hyp_param.gpus
@@ -228,7 +268,7 @@ if __name__ == "__main__":
         hyp_param.experiment_name = "dummpy_test"
         # hyp_param.image_width = 128
         # hyp_param.image_height = 128
-
+    hyp_param.experiment_name = "[STEREO]" + hyp_param.experiment_name
     logger.critical(f"SETUP: {hyp_param.setup}")
     logger.critical(f"EPOCH: {hyp_param.epochs}")
     logger.critical(f"BACKBONE: {hyp_param.visual_backbone}")

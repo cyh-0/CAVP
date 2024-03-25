@@ -15,11 +15,12 @@ from models.audio.audio_network import AudioModel
 # from models.audio.audio_network_vggish import AudioModel
 from models.attn import CROSS_ATTENTION, Mlp
 from loguru import logger
+from models.visual.backbones.pvt.pvt import pvt_v2_b5
 
 
-class SoundBank:
+class SoundBank(nn.Module):
     def __init__(self, out_dim=304, args=None, device=0):
-        self.sound_bank = torch.zeros(
+        self.bank_vault = torch.zeros(
             (args.num_classes, args.batch_size, out_dim),
             requires_grad=False,
             device=device,
@@ -27,32 +28,24 @@ class SoundBank:
 
     def update_bank(self, waveform, img_label):
         img_label[:, 0] = 0
-        target = [
-            item.nonzero()
-            .squeeze()
-            .cpu()
-            .view(
-                -1,
-            )
-            .tolist()
-            for item in img_label
-        ]
+        target = [item.nonzero().squeeze().cpu().view(-1,).tolist() for item in img_label]
         for i in range(len(target)):
             item = target[i]
-            for sub_label in item:
-                self.queue(sub_label, waveform[i, None])
+            if len(item) != 1:
+                continue
+            self.queue(item[0], waveform[i])
         return
 
     def queue(self, class_idx, fea_a):
-        self.sound_bank[class_idx] = torch.cat(
-            (self.sound_bank[class_idx][1:], fea_a.detach()), dim=0
+        self.bank_vault[class_idx] = torch.cat(
+            (self.bank_vault[class_idx][1:], fea_a.detach()), dim=0
         )
         return
 
     def overwrite_audio_feature(self, shuffle_fea_a, org_fea_a, mod_idx_map):
         for i, (idx, target_label) in enumerate(mod_idx_map.items()):
             """Change audio at <idx> to random audio with label <curr_label>"""
-            fake_audio = self.sound_bank[None, target_label][:, 0]
+            fake_audio = self.bank_vault[None, target_label][:, 0]
             # self.queue(target_label, org_fea_a[idx, None])
             shuffle_fea_a[idx] = fake_audio
         return shuffle_fea_a
@@ -82,6 +75,7 @@ class CAVP(nn.Module):
         audio_backbone_pretrain_path=None,
         visual_backbone=50,
         args=None,
+        in_plane=1,
     ):
         super(CAVP, self).__init__()
         seg_model = args.seg_model
@@ -108,31 +102,32 @@ class CAVP(nn.Module):
             self.latent_dim = 512
             self.backbone = hrnet_w48(pretrain_path)
             self.segment = OCR(num_classes=num_classes)
+        elif seg_model == "PVT":
+            self.latent_dim = 112
+            self.backbone = pvt_v2_b5()
+            ckpt = torch.load("../ckpts/pretrained/pvt_v2_b5.pth")
+            del ckpt['head.weight']
+            del ckpt['head.bias']
+            self.backbone.load_state_dict(ckpt)
+            self.segment = DeepLabV3Plus(
+                num_classes=num_classes, aspp_in_plane=512,aspp_out_plane=64,
+            )
         else:
             raise ValueError("UNKNOW BACKBONE")
 
         self.cross_att = CROSS_ATTENTION(
             dim_in=self.latent_dim, embed_dim=self.latent_dim, depth=1
         )
-        # self.audio_projector = Mlp(
-        #     in_features=128,
-        #     hidden_features=304,
-        #     out_features=304,
-        #     drop=0.0,
-        # )
+
         self.visual_projector = Mlp(
             in_features=self.latent_dim,
             hidden_features=256,
             out_features=self.latent_dim,
             drop=0.0,
         )
-        # self.visual_projector = ProjectionHead(self.latent_dim, self.latent_dim)
 
         self.audio_backbone = AudioModel(
-            args.audio_backbone, audio_backbone_pretrain_path, self.latent_dim
-        )
-        self.memory = SoundBank(
-            out_dim=self.latent_dim, args=args, device=args.local_rank
+            args.audio_backbone, audio_backbone_pretrain_path, self.latent_dim, in_plane=in_plane
         )
 
     def forward_cls(self, out, input_shape):
@@ -145,20 +140,13 @@ class CAVP(nn.Module):
         visual = rearrange(visual, "b c h w -> b (h w) c", h=h, w=w)
         fea_v = self.visual_projector(visual)
         fea_v = rearrange(fea_v, "b (h w) c -> b c h w", h=h, w=w)
-        # fea_v_proj = fea_v.clone()
+        fea_v_proj = fea_v.clone()
 
-        # audio_feature = fea_a.clone()
         fea_a = fea_a.unsqueeze(-1).unsqueeze(-1)
-        fea_v, fea_a, attn_v = self.cross_att(fea_v, fea_a)
+        fea_v, _, attn_v = self.cross_att(fea_v, fea_a)
         fea_v = rearrange(fea_v, "b (h w) c -> b c h w", h=h, w=w)
-        # fea_a = rearrange(fea_a, "b (h w) c -> b c h w", h=1, w=1)
-        """
-        remove
-        """
-        # v_proj = rearrange(fea_v_proj, "b c h w -> b (h w) c", h=h, w=w)
-        # a_proj = self.audio_proj(audio_feature)
-        # a_proj = audio_feature
-        return fea_v, attn_v
+        
+        return fea_v, {"audio":fea_a, "visual":fea_v_proj, "attn_v":attn_v}
 
     def forward_audio(self, audio, shuffle_info=None, ow_flag=False):
         fea_a = self.audio_backbone(audio)
@@ -179,31 +167,34 @@ class CAVP(nn.Module):
 
         return torch.cat((fea_a, shuffle_fea_a), dim=0)
 
-    def forward_train(self, image, audio=None, shuffle_info=None, ow_flag=False):
+    def forward_train(self, image, audio=None, shuffle_info=None, ow_flag=False, audio_func=False):
         B = image.shape[0]
         input_shape = image.shape[-2:]
         x_fea = self.backbone(image)
         fea_v = self.segment.forward_feature(x_fea)
         """Concatenate features perpared for contrstive learning"""
         fea_v = torch.cat((fea_v, fea_v.clone()), dim=0)
-        fea_a = self.forward_audio(audio, shuffle_info, ow_flag)
-        out_fusion, attn_v = self.forward_fusion(fea_v, fea_a)
+        if audio_func:
+            fea_a = self.forward_audio(audio, shuffle_info, ow_flag)
+        else:
+            fea_a = self.audio_backbone(audio)
+        out_fusion, fea_pack_ = self.forward_fusion(fea_v, fea_a)
         out_pred = self.forward_cls(out_fusion, input_shape)
-        return out_pred, out_fusion, attn_v
+        return out_pred, out_fusion, fea_pack_
 
     def forward_inference(self, image, audio=None):
         input_shape = image.shape[-2:]
         x_fea = self.backbone(image)
         fea_v = self.segment.forward_feature(x_fea)
         fea_a = self.audio_backbone(audio)
-        out_fusion, _ = self.forward_fusion(fea_v, fea_a)
+        out_fusion, fea_pack_ = self.forward_fusion(fea_v, fea_a)
         out_pred = self.forward_cls(out_fusion, input_shape)
-        return out_pred, out_fusion
+        return out_pred, out_fusion, fea_pack_
 
     def forward(
-        self, image, audio=None, shuffle_info=None, ow_flag=False, eval_mode=False
+        self, image, audio=None, shuffle_info=None, ow_flag=False, eval_mode=False, audio_func=False
     ):
         if eval_mode:
             return self.forward_inference(image, audio)
         else:
-            return self.forward_train(image, audio, shuffle_info, ow_flag)
+            return self.forward_train(image, audio, shuffle_info, ow_flag, audio_func=audio_func)
