@@ -2,7 +2,7 @@
 Official code for "Unraveling Instance Associations: A Closer Look for Audio-Visual Segmentation"
 
 > **Unraveling Instance Associations: A Closer Look for Audio-Visual Segmentation**,<br />
-> [Yuanhong Chen*](https://scholar.google.com/citations?user=PiWKAx0AAAAJ&hl=en&oi=ao), [Yuyuan Liu*](https://scholar.google.com/citations?user=SibDXFQAAAAJ&hl=zh-CN), [Hu Wang](https://huwang01.github.io/), [Fengbei Liu](https://fbladl.github.io/), [Chong Wang](https://scholar.google.com/citations?user=IWcTej4AAAAJ&hl=en&oi=ao), [Gustavo Carneiro](https://www.surrey.ac.uk/people/gustavo-carneiro).            
+> [Yuanhong Chen*](https://scholar.google.com/citations?user=PiWKAx0AAAAJ&hl=en&oi=ao), [Yuyuan Liu*](https://scholar.google.com/citations?user=SibDXFQAAAAJ&hl=zh-CN), [Hu Wang](https://huwang01.github.io/), [Fengbei Liu](https://fbladl.github.io/), [Chong Wang](https://scholar.google.com/citations?user=IWcTej4AAAAJ&hl=en&oi=ao), Helen Frazer, [Gustavo Carneiro](https://www.surrey.ac.uk/people/gustavo-carneiro).            
 > *CVPR 2024 ([arXiv 2304.02970](https://arxiv.org/abs/2304.02970))*
 
 
