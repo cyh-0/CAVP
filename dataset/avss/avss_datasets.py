@@ -18,13 +18,19 @@ class AVSSDataset(Dataset):
         csv_fn = avss_cfg.DATA.META_CSV_PATH
         dataframe = pd.read_csv(csv_fn, sep=',')
         dataframe = dataframe[dataframe['split'] == mode] # train, val, test
+
+        if args.avsbench_split != "all":
+            logger.critical("*** LOADING SPLIT - {} ***".format(args.avsbench_split.upper()))
+            dataframe = dataframe[dataframe["label"] == args.avsbench_split]
+
         transform_v = VisualAugmentation(
             image_mean=args.image_mean,
             image_std=args.image_std,
             image_width=args.image_width,
             image_height=args.image_height,
             mode=mode,
-            setup=args.setup
+            setup=args.setup,
+            resize_flag=args.resize_flag,
         )
 
         self.dataset_v = VisualDataset(

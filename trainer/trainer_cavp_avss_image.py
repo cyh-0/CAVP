@@ -182,16 +182,18 @@ class CAVP_TRAINER:
             """"1"""
             shuffle_audio = waveform.clone()[shuffle_idx]
             mod_idx_map = None
-            if epoch >= 1:
-                if_match, shuffle_img_label, mod_idx_map = self.overwrite_miss_match(
-                    if_match, shuffle_img_label, img_label
-                )
-                """ Update memory bank """
-                if ow_flag:
-                    shuffle_audio = self.sound_bank.overwrite_audio_feature(
-                        shuffle_audio, waveform, mod_idx_map
+            
+            if self.args.avsbench_split == "all":
+                if epoch >= 1:
+                    if_match, shuffle_img_label, mod_idx_map = self.overwrite_miss_match(
+                        if_match, shuffle_img_label, img_label
                     )
-            self.sound_bank.update_bank(waveform, img_label)
+                    """ Update memory bank """
+                    if ow_flag:
+                        shuffle_audio = self.sound_bank.overwrite_audio_feature(
+                            shuffle_audio, waveform, mod_idx_map
+                        )
+                self.sound_bank.update_bank(waveform, img_label)
 
             input_waveform = torch.cat((waveform, shuffle_audio))
             

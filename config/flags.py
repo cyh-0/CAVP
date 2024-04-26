@@ -49,6 +49,7 @@ def load_args_and_config():
     # Flags
     parser.add_argument("--cavp_flag", default=False, action="store_true")
     parser.add_argument("--cutmix_flag", default=False, action="store_true")
+    parser.add_argument("--resize_flag", default=False, action="store_true")
     # hyp-parameters for function.
     parser.add_argument("--batch_size", default=16, type=int, help="Batch Size")
     parser.add_argument("--lr", default=1e-3, type=float)
@@ -80,6 +81,8 @@ def load_args_and_config():
         args.tags = add_tag(args.tags, "vpo_msmi")
     elif args.setup == "avss":
         from config.config_avss import config
+    elif args.setup == "avss_binary":
+        from config.config_avss_binary import config
     else:
         raise ValueError("Unknow setup")
 

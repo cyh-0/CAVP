@@ -71,6 +71,12 @@ class VisualDataset(Dataset):
         logger.info("{} videos are used for {}.".format(len(self.df), self.mode))
         self.pallete = get_v2_pallete(avss_cfg.DATA.LABEL_IDX_PATH, num_cls=avss_cfg.NUM_CLASSES)
         self.denorm = DeNormalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
+        
+        self.resize_flag = args.resize_flag
+        self.avsbench_split = args.avsbench_split
+        if self.avsbench_split != "all":
+            logger.critical(f"CONVERT LABEL TO BINARY")
+
 
     def __getflag(self, set):
         if set == 'v1s': # data from AVSBench-object single-source subset (5s, gt is only the first annotated frame)
@@ -146,6 +152,10 @@ class VisualDataset(Dataset):
 
         class_label = [F.one_hot(torch.unique(label[i][label[i]!=255]), num_classes=self.num_classes).sum(0) for i in range(len(label))]
         class_label = torch.stack(class_label)
+
+        if self.resize_flag:
+            if self.avsbench_split != "all":
+                label[(label != 255) & (label != 0)] = 1
 
         return image, label, class_label, self.name_list[idx], frame_available, mask_available
 

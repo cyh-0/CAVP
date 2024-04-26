@@ -9,8 +9,8 @@ cfg = C
 C.seed = 666
 
 """Image Settings"""
-C.image_width = 512  # 224 # 512
-C.image_height = 512  # 224 # 512
+C.image_width = 224  # 224 # 512
+C.image_height = 224  # 224 # 512
 C.image_mean = [0.485, 0.456, 0.406]
 C.image_std = [0.229, 0.224, 0.225]
 
@@ -29,12 +29,13 @@ C.root_dir = os.path.realpath("")
 """Data Dir and Weight Dir"""
 C.use_vpo = False
 C.root_dataset_dir = "../audio_visual"
-C.dataset_name = "avsbench_data_single_yh/"
+C.dataset_name = "avsbench_data_single_plus/"
 C.vgg_root = "vggsound_bench/VGGSound"
+C.coco_root = "VPO/VPO-SS/"
 C.class_dict = None
 C.index_table = index_table_avs
 C.data_path = os.path.join(C.root_dataset_dir, C.dataset_name)
-C.vpo_data_path = os.path.join(C.root_dataset_dir, C.coco_root)
+C.coco_data_path = os.path.join(C.root_dataset_dir, C.coco_root)
 C.vgg_data_path = os.path.join(C.root_dataset_dir, C.vgg_root)
 C.synth_data_path = os.path.join(C.root_dataset_dir, C.vgg_root)
 
@@ -42,10 +43,10 @@ C.synth_data_path = os.path.join(C.root_dataset_dir, C.vgg_root)
 C.visual_backbone = 50
 C.last_three_dilation_stride = [False, False, False]
 C.audio_backbone = "vgg"
-C.visual_backbone_pretrain_path = "ckpts/pretrained/resnet{}.pth".format(
+C.visual_backbone_pretrain_path = "../ckpts/pretrained/resnet{}.pth".format(
     C.visual_backbone
 )
-C.audio_backbone_pretrain_path = "ckpts/pretrained/vgg.pth"
+C.audio_backbone_pretrain_path = "../ckpts/pretrained/vgg.pth"
 
 """Optimisation Settings"""
 C.lr = 1e-3  # 1e-3 for binary
@@ -54,7 +55,7 @@ C.batch_size = 16
 C.epochs = 60
 C.momentum = 0.9
 C.weight_decay = 1e-4
-C.num_classes = 71
+C.num_classes = 2
 C.warm_up_epoch = 0
 C.num_workers = 16
 C.ciou_thre = [0.3]
@@ -64,7 +65,7 @@ C.pred_thre = 0.4
 # Specify you wandb environment KEY; and paste here
 C.wandb_key = "bf10181288fa64afd20c86feac6ea4b1abfad71e"
 # Your project [work_space] name
-C.proj_name = "AVSBench-S"
+C.proj_name = "AVSBench-Binary"
 C.experiment_name = "baseline+audio(pretrain)"
 
 # half pretrained_ckpts-loader upload images; loss upload every iteration
@@ -75,7 +76,7 @@ C.upload_iter = 100
 
 # False for debug; True for visualize
 C.wandb_mode = "online"
-C.wandb_dir = "/mnt/beegfs/mccarthy/backed_up/projects/braix/ychen/wandb_logs/CAVP"
+C.wandb_dir = "/mnt/beegfs/mccarthy/backed_up/projects/braix/ychen/wandb_logs/CAVP-P"
 
 # """Save Config"""
 # C.saved_dir = os.path.join("/media/data/yy/ckpts/avseg", C.experiment_name)

@@ -6,7 +6,7 @@ import torchvision.transforms as transforms
 from loguru import logger
 
 class VisualAugmentation(object):
-    def __init__(self, image_mean, image_std, image_width, image_height, mode, setup):
+    def __init__(self, image_mean, image_std, image_width, image_height, mode, setup, resize_flag=False):
         self.mode = mode
         self.image_size = (image_height, image_width)
         self.image_norm = (image_mean, image_std)
@@ -23,8 +23,16 @@ class VisualAugmentation(object):
             # self.scale_list = [.75, 1., 1.25, 1.5, 1.75, 2.]
             self.scale_list = [0.5,0.75,1.0,1.25,1.5,1.75,2.0]
         
+        self.resize_flag = resize_flag
+
         logger.critical(f"ColorJitter: {self.color_jitter}")
         logger.critical(f"Scale list: {self.scale_list}")
+
+    def resize(self, image_, label_):
+        h_, w_ = self.image_size
+        image_ = F.resize(image_, (h_, w_), transforms.InterpolationMode.BICUBIC)
+        label_ = F.resize(label_, (h_, w_), transforms.InterpolationMode.NEAREST)
+        return image_, label_
 
     def random_crop_with_padding(self, image_, label_):
         w_, h_ = image_.size
@@ -60,13 +68,18 @@ class VisualAugmentation(object):
         x, y = self.random_scales(x, y)
         if self.color_jitter is not None:
             x = self.color_jitter(x) 
-        x, y = self.random_crop_with_padding(x, y)
+        if self.resize_flag:
+            x, y = self.resize(x, y)
+        else:
+            x, y = self.random_crop_with_padding(x, y)
         x = self.to_tensor(x)
         y = torch.tensor(numpy.asarray(y)).long()
         x = self.normalise(x)
         return x, y
 
     def test_aug(self, x, y):
+        if self.resize_flag:
+            x, y = self.resize(x, y)
         x = self.to_tensor(x)
         y = torch.tensor(numpy.asarray(y)).long()
         x = self.normalise(x)
