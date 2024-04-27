@@ -39,9 +39,9 @@ C.use_vpo = True
 C.replace_name = False
 C.index_table = index_table_coco
 C.class_dict = coco_class_dict
-C.coco_root = "VPO/VPO-MS/"
+C.vpo_root = "VPO/VPO-MS/"
 C.vpo_num_classes = 21 + 1
-C.vpo_data_path = os.path.join(C.root_dataset_dir, C.coco_root)
+C.vpo_data_path = os.path.join(C.root_dataset_dir, C.vpo_root)
 C.coco_img_root = os.path.join(C.vpo_data_path, "data")
 C.coco_mask_root = os.path.join(C.vpo_data_path, "mask")
 

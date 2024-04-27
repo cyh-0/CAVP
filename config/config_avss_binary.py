@@ -31,11 +31,11 @@ C.use_vpo = False
 C.root_dataset_dir = "../audio_visual"
 C.dataset_name = "avsbench_data_single_plus/"
 C.vgg_root = "vggsound_bench/VGGSound"
-C.coco_root = "VPO/VPO-SS/"
+C.vpo_root = "VPO/VPO-SS/"
 C.class_dict = None
 C.index_table = index_table_avs
 C.data_path = os.path.join(C.root_dataset_dir, C.dataset_name)
-C.coco_data_path = os.path.join(C.root_dataset_dir, C.coco_root)
+C.coco_data_path = os.path.join(C.root_dataset_dir, C.vpo_root)
 C.vgg_data_path = os.path.join(C.root_dataset_dir, C.vgg_root)
 C.synth_data_path = os.path.join(C.root_dataset_dir, C.vgg_root)
 
