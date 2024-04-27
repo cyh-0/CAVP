@@ -29,7 +29,7 @@ C.root_dir = os.path.realpath("")
 """Data Dir and Weight Dir"""
 C.root_dataset_dir = "../audio_visual"
 C.dataset_name = "avsbench_data_single_plus/"
-C.vgg_root = "vggsound_bench/VGGSound"
+
 C.data_path = os.path.join(C.root_dataset_dir, C.dataset_name)
 C.vgg_data_path = os.path.join(C.root_dataset_dir, C.vgg_root)
 C.synth_data_path = os.path.join(C.root_dataset_dir, C.vgg_root)
