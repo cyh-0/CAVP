@@ -5,13 +5,42 @@ Official code for "Unraveling Instance Associations: A Closer Look for Audio-Vis
 > [Yuanhong Chen*](https://scholar.google.com/citations?user=PiWKAx0AAAAJ&hl=en&oi=ao), [Yuyuan Liu*](https://scholar.google.com/citations?user=SibDXFQAAAAJ&hl=zh-CN), [Hu Wang](https://huwang01.github.io/), [Fengbei Liu](https://fbladl.github.io/), [Chong Wang](https://scholar.google.com/citations?user=IWcTej4AAAAJ&hl=en&oi=ao), Helen Frazer, [Gustavo Carneiro](https://www.surrey.ac.uk/people/gustavo-carneiro).            
 > *CVPR 2024 ([arXiv 2304.02970](https://arxiv.org/abs/2304.02970))*
 
+<!-- This work presents VPO and CAVP -->
+## Dataset
+*VPO datasets are available [`here`](https://drive.google.com/file/d/12jq7-Ke09ZPoUI1od44q97DNLrThoHc3/view?usp=sharing)*
 
-<figure>
+## Demon
+
+
+## Performance
+
+
+
+
+
+## Checkpoints
+
+
+## Usage
+### Requirements
+```
+git clone git@github.com:cyh-0/CAVP.git
+cd CAVP
+pip install -r requirements.txt
+```
+### Training
+
+
+
+
+
+
+<!-- <figure>
     <img src="./figs/avs_bench-motivation-1.png" width="500"/>
     <figcaption>The TPAVI AVS model tends to be biased to segment specific objects in a scene due to limitations in the training set and in the training process.</figcaption>
-</figure>
+</figure> -->
 
-## Dataset
+<!-- ## Dataset
 ### AVSBench-Single+
 Datasets are available here [`AVSBench-Single+`]()*
 
@@ -29,11 +58,11 @@ image with relevant audio files to produce pixel-level multi-class annotations.*
 <figure>
     <img src="./figs/multi+pie-1.png" width="500"/>
     <figcaption>Data distribution of VPO.</figcaption>
-</figure>
+</figure> -->
 
 
 
-## Method
+<!-- ## Method
 ### Contrastive Audio-visual Pairing
 <figure>
     <img src="./figs/avs_bench-ctr-1.png" width="500"/>
@@ -67,7 +96,7 @@ image with relevant audio files to produce pixel-level multi-class annotations.*
 |------------------|-------|---------|
 | TPAVI (ResNet50) | 20.18 | 25.20   |
 | TPAVI (PVT)      | 29.77 | 35.20   |
-| Ours             | 39.78 | 50.67   |
+| Ours             | 39.78 | 50.67   | -->
 
 
 ## Citation
