@@ -9,8 +9,12 @@ Official code for "Unraveling Instance Associations: A Closer Look for Audio-Vis
 ## Dataset
 *VPO datasets are available [`here`](https://drive.google.com/file/d/12jq7-Ke09ZPoUI1od44q97DNLrThoHc3/view?usp=sharing)*
 
-## Demon
+![vpo](./figs/avs_vpo_dataset.png)
+*Visual comparison between datasets. We show four audio-visual classes, including “female”, “cat”, “dog”, and “car”. The AVSBench (SS) (1st frame) provides pixel-level multi-class annotations to the images containing a single sounding object.  The proposed VPO benchmarks (2nd frame to 4th frame) pair a subset of the segmented objects in an image with relevant audio files to produce pixel-level multi-class annotations.
+*
 
+
+## Demon
 
 ## Performance
 
@@ -101,11 +105,12 @@ image with relevant audio files to produce pixel-level multi-class annotations.*
 
 ## Citation
 ```
-@article{chen2023closer,
-  title={A Closer Look at Audio-Visual Semantic Segmentation},
-  author={Chen, Yuanhong and Liu, Yuyuan and Wang, Hu and Liu, Fengbei and Wang, Chong and Carneiro, Gustavo},
-  journal={arXiv e-prints},
-  pages={arXiv--2304},
-  year={2023}
+@misc{chen2024unraveling,
+      title={Unraveling Instance Associations: A Closer Look for Audio-Visual Segmentation}, 
+      author={Yuanhong Chen and Yuyuan Liu and Hu Wang and Fengbei Liu and Chong Wang and Helen Frazer and Gustavo Carneiro},
+      year={2024},
+      eprint={2304.02970},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
 }
 ```
