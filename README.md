@@ -33,7 +33,7 @@ git clone git@github.com:cyh-0/CAVP.git
 cd CAVP
 pip install -r requirements.txt
 ```
-### Softlinks
+### Path
 ```
 ln -s /path/to/datasets ../audio_visual
 ln -s /path/to/ckpts ./ckpts
