@@ -30,7 +30,7 @@ C.root_dir = os.path.realpath("")
 C.use_vpo = False
 C.root_dataset_dir = "../audio_visual"
 C.dataset_name = "avsbench_data_single_plus/"
-
+C.vgg_root = "vggsound_bench/VGGSound"
 C.vpo_root = "VPO/VPO-SS/"
 C.class_dict = None
 C.index_table = index_table_avs
