@@ -315,6 +315,7 @@ class CAVP_TRAINER:
                 (
                     avl_map_logits,
                     _,
+                    _,
                 ) = model_v_.module(image, audio, eval_mode=True)
             """
             Prepare Metrics
