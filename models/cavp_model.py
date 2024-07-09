@@ -18,7 +18,7 @@ from loguru import logger
 from models.visual.backbones.pvt.pvt import pvt_v2_b5
 
 
-class SoundBank(nn.Module):
+class SoundBank:
     def __init__(self, out_dim=304, args=None, device=0):
         self.bank_vault = torch.zeros(
             (args.num_classes, args.batch_size, out_dim),
@@ -33,7 +33,8 @@ class SoundBank(nn.Module):
             item = target[i]
             if len(item) != 1:
                 continue
-            self.queue(item[0], waveform[i])
+            tmp_waveform = waveform[i, None] if len(waveform.shape) == 2 else waveform[i]
+            self.queue(item[0], tmp_waveform)
         return
 
     def queue(self, class_idx, fea_a):
@@ -129,6 +130,10 @@ class CAVP(nn.Module):
         self.audio_backbone = AudioModel(
             args.audio_backbone, audio_backbone_pretrain_path, self.latent_dim, in_plane=in_plane
         )
+        self.memory = SoundBank(
+            out_dim=self.latent_dim, args=args, device=args.local_rank
+        )
+        self.local_rank = args.local_rank
 
     def forward_cls(self, out, input_shape):
         out = self.segment.upsample(out.contiguous())

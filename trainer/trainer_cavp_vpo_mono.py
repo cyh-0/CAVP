@@ -28,6 +28,7 @@ import numpy
 from PIL import Image
 from models.cavp_model import SoundBank
 
+
 class CAVP_TRAINER:
     def __init__(self, args, train_loader, visual_tool, engine, lr_scheduler) -> None:
         self.args = args
