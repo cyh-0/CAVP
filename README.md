@@ -40,7 +40,10 @@ pip install -r requirements.txt
 ln -s /path/to/datasets ../audio_visual
 ln -s /path/to/ckpts ./ckpts
 ```
+
 ### Training
+Before training, you need to update your own WANDB_KEY in the config file.
+
 Training scripts for AVSBench-Object (RESIZED). 
 ```
 # AVSBENCH - OBJECT 
