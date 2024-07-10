@@ -47,11 +47,11 @@ Before training, you need to update your own WANDB_KEY in the config file.
 Training scripts for AVSBench-Object (RESIZED). 
 ```
 # AVSBENCH - OBJECT 
-python main_avss_resize.py --experiment_name "CAVP" --setup avss --avsbench_split "all" --gpus 1 --batch_size 16 --lr 1e-3 --weight_decay 1e-4 --epochs 60 --wandb_mode disabled --num_workers 16
+python main_avss_resize.py --experiment_name "CAVP" --setup avss_binary --resize_flag --avsbench_split "all" --gpus 1 --batch_size 16 --lr 1e-3 --weight_decay 1e-4 --epochs 60 --wandb_mode disabled --num_workers 16
 
-python main_avss_resize.py --experiment_name "CAVP" --setup avss --avsbench_split "v1s" --gpus 1 --batch_size 16 --lr 1e-3 --weight_decay 1e-4 --epochs 60 --wandb_mode disabled --num_workers 16
+python main_avss_resize.py --experiment_name "CAVP" --setup avss_binary --resize_flag --avsbench_split "v1s" --gpus 1 --batch_size 16 --lr 1e-3 --weight_decay 1e-4 --epochs 60 --wandb_mode disabled --num_workers 16
 
-python main_avss_resize.py --experiment_name "CAVP" --setup avss --avsbench_split "v1m" --gpus 1 --batch_size 16 --lr 1e-3 --weight_decay 1e-4 --epochs 60 --wandb_mode disabled --num_workers 16
+python main_avss_resize.py --experiment_name "CAVP" --setup avss_binary --resize_flag --avsbench_split "v1m" --gpus 1 --batch_size 16 --lr 1e-3 --weight_decay 1e-4 --epochs 60 --wandb_mode disabled --num_workers 16
 ```
 
 Training scripts for AVSBench-Semantic. 
