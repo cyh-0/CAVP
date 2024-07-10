@@ -62,7 +62,7 @@ C.pred_thre = 0.4
 
 """Wandb Config"""
 # Specify you wandb environment KEY; and paste here
-C.wandb_key = "bf10181288fa64afd20c86feac6ea4b1abfad71e"
+C.wandb_key = "/use/your/own/wandb/api/key"
 # Your project [work_space] name
 C.proj_name = "AVSBench-S"
 C.experiment_name = "baseline+audio(pretrain)"
