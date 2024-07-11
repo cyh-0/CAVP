@@ -5,6 +5,8 @@
 **/checkpoints/*
 **/.history/*
 **/__pycache__/*
+**/__pycache__/
+dataset/avss/visual/__pycache__/*
 # **/torchvggish/*
 *.pyc
 *.mp4
@@ -19,7 +21,6 @@
 *.csv
 *.txt
 *.pth
-*yuanhong-MS-7C35
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -150,3 +151,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+dataset/avss/visual/__pycache__/visual_aug.cpython-39.pyc
+dataset/avss/visual/__pycache__/visual_aug.cpython-39.pyc

@@ -49,7 +49,12 @@ def seed_it(seed):
 
 def set_group_lr(model_v, hyp_param_):
     param_lists_v = []
-    # bkb: 0, 1 | cross_attn 2, 3 | seg 4:
+    # 8
+    for module in model_v.segment.business_layer:
+        param_lists_v = group_weight(
+            param_lists_v, module, torch.nn.BatchNorm2d, hyp_param_.lr * 10.0
+        )
+    #
     param_lists_v = group_weight(
         param_lists_v,
         model_v.backbone,
@@ -63,10 +68,7 @@ def set_group_lr(model_v, hyp_param_):
         param_lists_v.append(
             {"params": model_v.cross_att.parameters(), "lr": hyp_param_.lr * 1}
         )
-    for module in model_v.segment.business_layer:
-        param_lists_v = group_weight(
-            param_lists_v, module, torch.nn.BatchNorm2d, hyp_param_.lr * 10.0
-        )
+
     return param_lists_v
 
 

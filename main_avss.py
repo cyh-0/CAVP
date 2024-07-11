@@ -156,29 +156,17 @@ def main(local_rank, ngpus_per_node, hyp_param_):
     wandb_.pallete = train_dataset.dataset_v.pallete
     
     # Data
-    train_sampler = (
-        torch.utils.data.distributed.DistributedSampler(train_dataset)
-        if hyp_param_.ddp
-        else None
-    )
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset,
-        batch_size=hyp_param_.batch_size,
-        shuffle=(train_sampler is None),
-        drop_last=True,
-        num_workers=hyp_param_.num_workers,
-        pin_memory=True,
-        sampler=train_sampler,
-    )
+    train_loader = torch.utils.data.DataLoader(train_dataset,
+                                                batch_size=hyp_param_.batch_size,
+                                                shuffle=True,
+                                                num_workers=hyp_param_.num_workers,
+                                                pin_memory=True)
+    test_loader = torch.utils.data.DataLoader(test_dataset,
+                                                batch_size=1,
+                                                shuffle=False,
+                                                num_workers=hyp_param_.num_workers,
+                                                pin_memory=True)
 
-    test_loader = torch.utils.data.DataLoader(
-        test_dataset,
-        batch_size=1,
-        shuffle=False,
-        drop_last=False,
-        num_workers=hyp_param_.num_workers,
-        pin_memory=True,
-    )
 
     from trainer.trainer_cavp_avss_image import CAVP_TRAINER
 
@@ -210,7 +198,7 @@ def main(local_rank, ngpus_per_node, hyp_param_):
         trainer.train(model_v, model_a, optimizer_v, optimizer_a, epoch, train_loader)
         if local_rank <= 0:
             if epoch % 5 == 0 or epoch >= 50:
-                trainer.validation(model_v, model_a, epoch, test_loader)
+            trainer.validation(model_v, model_a, epoch, test_loader)
         ddp_utils.barrier(hyp_param_.ddp)
 
     if hyp_param_.local_rank <= 0:
