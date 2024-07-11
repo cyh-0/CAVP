@@ -19,7 +19,7 @@ def load_args_and_config():
     )
     parser.add_argument(
         "--wandb_dir",
-        default="/mnt/beegfs/mccarthy/backed_up/projects/braix/ychen/wandb_logs/CAVP",
+        default="./",
         type=str,
         help="Mode of wandb API",
     )

@@ -63,7 +63,7 @@ C.pred_thre = 0.4
 
 """Wandb Config"""
 # Specify you wandb environment KEY; and paste here
-C.wandb_key = "/use/your/own/wandb/api/key"
+C.wandb_key = ""
 # Your project [work_space] name
 C.proj_name = "AVSBench-Binary"
 C.experiment_name = "baseline+audio(pretrain)"
@@ -76,7 +76,7 @@ C.upload_iter = 100
 
 # False for debug; True for visualize
 C.wandb_mode = "online"
-C.wandb_dir = "/mnt/beegfs/mccarthy/backed_up/projects/braix/ychen/wandb_logs/CAVP-P"
+C.wandb_dir = "./"
 
 # """Save Config"""
 # C.saved_dir = os.path.join("/media/data/yy/ckpts/avseg", C.experiment_name)

@@ -233,7 +233,7 @@ def main(local_rank, ngpus_per_node, hyp_param_):
         trainer.train(model_v, model_a, optimizer_v, optimizer_a, epoch, train_loader)
 
         if local_rank <= 0:
-            if epoch % 5 == 0 or epoch >= 30:
+            if epoch % 5 == 0 or epoch >= 50:
                 trainer.validation(model_v, model_a, epoch, test_loader)
         ddp_utils.barrier(hyp_param_.ddp)
 

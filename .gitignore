@@ -4,8 +4,9 @@
 **/pretrained_backbones/*
 **/checkpoints/*
 **/.history/*
+**/__pycache__/*
 # **/torchvggish/*
-
+*.pyc
 *.mp4
 *.npy
 *.nfs000*

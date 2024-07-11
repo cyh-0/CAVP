@@ -14,7 +14,7 @@ class VisualAugmentation(object):
         self.normalise = transforms.Normalize(mean=image_mean, std=image_std)
         self.get_crop_pos = transforms.RandomCrop(self.image_size)
         self.to_tensor = transforms.ToTensor()
-        if setup == "avs" or setup == "avss":
+        if setup == "avs" or setup == "avss" or setup == "avss_binary":
             # AVS
             self.scale_list = [.5, .75, 1.]
             self.color_jitter = None
