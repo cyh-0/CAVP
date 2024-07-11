@@ -151,5 +151,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-dataset/avss/visual/__pycache__/visual_aug.cpython-39.pyc
-dataset/avss/visual/__pycache__/visual_aug.cpython-39.pyc
+
