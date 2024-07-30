@@ -42,15 +42,10 @@ Please note that all the tables in the original paper use conventional semantic 
 | CAVP - CNN                             | 76.94                | 87.31   | 52.68                | 64.87   | 30.37              | 35.29   |
 | CAVP - Transformer                     |                      |         |                      |         |                    |         |
 
-
-avsbench-object-ss-224\
-https://drive.google.com/file/d/1uBteMNAO_dXVgN8yzII901469jfJxcmO/view?usp=drive_link
-
-avsbench-object-ms-224\
-https://drive.google.com/file/d/1ZWE8dJV_uLfMrbnvZ8NW6GGwXM8-QhxA/view?usp=drive_link
-
-avss-224\
-https://drive.google.com/file/d/1DwVw_NtDv23QacpNvKlabWSnnPy25xfr/view?usp=drive_link
+Checkpoints are available here:
+[avsbench-object-ss-224](https://drive.google.com/file/d/1uBteMNAO_dXVgN8yzII901469jfJxcmO/view?usp=drive_link), 
+[avsbench-object-ms-224](https://drive.google.com/file/d/1ZWE8dJV_uLfMrbnvZ8NW6GGwXM8-QhxA/view?usp=drive_link), 
+[avss-224](https://drive.google.com/file/d/1DwVw_NtDv23QacpNvKlabWSnnPy25xfr/view?usp=drive_link).
 
 
 
