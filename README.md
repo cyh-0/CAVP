@@ -17,7 +17,7 @@ Official code for "Unraveling Instance Associations: A Closer Look for Audio-Vis
 
 
 ## Demon
-
+![video](./figs/eK3T8tH3Y9E_134000_144000.mp4)
 
 ## Results
 
