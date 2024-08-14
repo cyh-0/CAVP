@@ -12,8 +12,8 @@ Official code for "Unraveling Instance Associations: A Closer Look for Audio-Vis
 *VGGSound audio files are available [`here`](https://drive.google.com/file/d/1-OB3E9qbanfvZGbxvmRL05hsxwD0YOPq/view?usp=sharing)*
 
 ![vpo](./figs/avs_vpo_dataset.png)
-*Visual comparison between datasets. We show four audio-visual classes, including “female”, “cat”, “dog”, and “car”. The AVSBench (SS) (1st frame) provides pixel-level multi-class annotations to the images containing a single sounding object.  The proposed VPO benchmarks (2nd frame to 4th frame) pair a subset of the segmented objects in an image with relevant audio files to produce pixel-level multi-class annotations.
-*
+Visual comparison between datasets. We show four audio-visual classes, including “female”, “cat”, “dog”, and “car”. The AVSBench (SS) (1st frame) provides pixel-level multi-class annotations to the images containing a single sounding object.  The proposed VPO benchmarks (2nd frame to 4th frame) pair a subset of the segmented objects in an image with relevant audio files to produce pixel-level multi-class annotations.
+
 
 ## Results
 
