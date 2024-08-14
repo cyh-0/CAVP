@@ -217,17 +217,18 @@ Please note that all the tables in the original paper use conventional semantic 
   </tr>
   <tr>
     <th></th>
-    <th colspan="3" style="text-align:center;">AVSBench-Object (SS)</th>
-    <th colspan="3" style="text-align:center;">AVSBench-Object (MS)</th>
+    <th colspan="2" style="text-align:center;">AVSBench-Object (SS)</th>
+    <th colspan="2" style="text-align:center;">AVSBench-Object (MS)</th>
+    <th colspan="2" style="text-align:center;">AVSBench-Semantics</th>
   </tr>
     <tr>
         <td>Model</td>
-        <td>J&amp;F Mean</td>
-        <td>J Mean</td>
-        <td>F Mean</td>
-        <td>J&amp;F Mean</td>
-        <td>J Mean</td>
-        <td>F Mean</td>
+        <td>mIoU</td>
+        <td>F-Score</td>
+        <td>mIoU</td>
+        <td>F-Score</td>
+        <td>mIoU</td>
+        <td>F-Score</td>
     </tr>
     <tr>
         <td>CAVP</td>
