@@ -173,13 +173,12 @@ Please note that all the tables in the original paper use conventional semantic 
 
 <table>
   <tr>
-      <th colspan="10" style="text-align:center;">RESNET-50 (IMGNET PRETRAIN)</th>
+      <th colspan="7" style="text-align:center;">RESNET-50 (IMGNET PRETRAIN)</th>
   </tr>
   <tr>
     <th></th>
     <th colspan="3" style="text-align:center;">AVSBench-Object (SS)</th>
     <th colspan="3" style="text-align:center;">AVSBench-Object (MS)</th>
-    <th colspan="3" style="text-align:center;">AVSBench-Semantics</th>
   </tr>
     <tr>
         <td>Model</td>
@@ -208,18 +207,6 @@ Please note that all the tables in the original paper use conventional semantic 
         <td>56.42</td>
         <td>68.25</td>
     </tr>    
-    <tr>
-        <td>CAVP</td>
-        <td>83.75</td>
-        <td>78.72</td>
-        <td>88.77</td>
-        <td>62.34</td>
-        <td>56.42</td>
-        <td>68.25</td>
-        <td></td>
-        <td></td>
-        <td></td>
-    </tr>
 </table>
 
 
@@ -244,25 +231,13 @@ Please note that all the tables in the original paper use conventional semantic 
     </tr>
     <tr>
         <td>CAVP</td>
-        <td>83.75</td>
-        <td>78.72</td>
-        <td>88.77</td>
-        <td>62.34</td>
-        <td>56.42</td>
-        <td>68.25</td>
+        <td>89.43</td>
+        <td>94.50</td>
+        <td>72.79</td>
+        <td>83.05</td>
+        <td>44.70</td>
+        <td>57.76</td>
     </tr>    
-    <tr>
-        <td>CAVP</td>
-        <td>83.75</td>
-        <td>78.72</td>
-        <td>88.77</td>
-        <td>62.34</td>
-        <td>56.42</td>
-        <td>68.25</td>
-        <td></td>
-        <td></td>
-        <td></td>
-    </tr>
 </table>
 
 
