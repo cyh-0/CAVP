@@ -52,17 +52,26 @@ def load_args_and_config():
     parser.add_argument("--resize_flag", default=False, action="store_true")
     # hyp-parameters for function.
     parser.add_argument("--batch_size", default=16, type=int, help="Batch Size")
-    parser.add_argument("--lr", default=1e-3, type=float)
+    parser.add_argument("--lr_power", default=0.9, type=float)
+    parser.add_argument("--lr", default=0.02, type=float)
+    parser.add_argument("--lr_aud", default=1e-4, type=float)
+    parser.add_argument("--lrs_seg", default=10, type=float)
+    parser.add_argument("--lrs_bkb", default=0.5, type=float)
     parser.add_argument("--weight_decay", default=1e-4, type=float)
     parser.add_argument("--epochs", default=60, type=int)
+    parser.add_argument("--loss_w", default=0.1, type=float)
     # Mode
     parser.add_argument("--ignore_ckpt", default=False, action="store_true")
     parser.add_argument("--local", default=False, action="store_true")
     parser.add_argument("--use_multi_source", default=False, action="store_true")
     parser.add_argument("--debug", default=False, action="store_true")
     parser.add_argument("--ow_rate", default=0.5, type=float)
-    #
+    # Model Hyper
+    parser.add_argument("--cl_temp", default=0.1, type=float)
+    parser.add_argument("--max_view", default=512, type=int)
+    # AVSBench
     parser.add_argument("--avsbench_split", default="all", type=str)
+    parser.add_argument("--data_root", default="", type=str)
 
     args = parser.parse_args()
     args.visual_backbone_pretrain_path = "../ckpts/pretrained/resnet{}.pth".format(
