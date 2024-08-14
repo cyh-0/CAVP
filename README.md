@@ -86,7 +86,7 @@ Please note that all the tables in the original paper use conventional semantic 
         <td>29.30</td>
     </tr>
     <tr>
-        <td>AVSC~\cite{liu2023audiovisual}</td>
+        <td>AVSC</td>
         <td>81.13</td>
         <td>77.02</td>
         <td>85.24</td>
