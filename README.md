@@ -173,7 +173,7 @@ Please note that all the tables in the original paper use conventional semantic 
 
 <table>
   <tr>
-      <th colspan="7" style="text-align:center;">RESNET-50 (IMGNET PRETRAIN)</th>
+      <th colspan="7" style="text-align:center;">RESNET-50 (COCO PRETRAIN)</th>
   </tr>
   <tr>
     <th></th>
@@ -213,7 +213,7 @@ Please note that all the tables in the original paper use conventional semantic 
 ### Dataset-level Evaluation (Convention Semantic Segmentation Metrics)
 <table>
   <tr>
-      <th colspan="7" style="text-align:center;">RESNET-50 (COCO PRETRAIN)</th>
+      <th colspan="7" style="text-align:center;">RESNET-50 (IMAGENET PRETRAIN)</th>
   </tr>
   <tr>
     <th></th>
