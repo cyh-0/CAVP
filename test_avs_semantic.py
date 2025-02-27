@@ -200,23 +200,11 @@ def main(local_rank, ngpus_per_node, hyp_param_):
         visual_tool=wandb_,
         lr_scheduler=lr_policy,
     )
-    
 
-    for epoch in range(0, hyp_param_.epochs):
-        engine.register_state(
-            dataloader=train_loader,
-            model_v=model_v,
-            optimizer_v=optimizer_v,
-            model_a=model_a,
-            optimizer_a=optimizer_a,
-        )
-        if hyp_param_.ddp:
-            train_loader.sampler.set_epoch(epoch)
-        trainer.train(model_v, model_a, optimizer_v, optimizer_a, epoch, train_loader)
-        if local_rank <= 0:
-            if epoch % 5 == 0 or epoch >= 50:
-                trainer.validation(model_v, model_a, epoch, test_loader)
-        ddp_utils.barrier(hyp_param_.ddp)
+    ckpt = torch.load("./avss_224.pth")['model']
+    model_v.load_state_dict(ckpt, strict=False)
+
+    trainer.validation(model_v, model_a, -1, test_loader)
 
     if hyp_param_.local_rank <= 0:
         wandb_.finish()

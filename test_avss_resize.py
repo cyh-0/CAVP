@@ -229,6 +229,8 @@ def main(local_rank, ngpus_per_node, hyp_param_):
 
     ckpt = torch.load("./cavp_avsobj_ss.pth")['model']
     # ckpt = torch.load("./cavp_avsobj_ms.pth")['model']
+
+    
     model_v.load_state_dict(ckpt, strict=False)
     trainer.test(model_v, model_a, -1, test_loader)
 

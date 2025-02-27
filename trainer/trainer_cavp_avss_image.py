@@ -405,4 +405,130 @@ class CAVP_TRAINER:
         del v_miou_ms, v_acc_ms, v_fd_ms, v_f1_ms, v_f03_ms
         return
 
-        
+    @torch.no_grad()
+    def validation(self, model_v_, model_a_, epoch, test_loader, status="val"):
+        model_v_.eval()
+        model_a_.eval()
+
+        target_list, visual_fea_list, audio_fea_list, fusion_fea_list = [], [], [], []
+        bg_fea_list = []
+
+        miou_measure = MIoU(num_classes=self.args.num_classes, ignore_index=255, local_rank=self.local_rank)
+        miou_measure_ms = MIoU(num_classes=self.args.num_classes, ignore_index=255, local_rank=self.local_rank)
+        fg_measure = ForegroundDetect(num_classes=self.args.num_classes, local_rank=self.local_rank)
+        fg_measure_ms = ForegroundDetect(num_classes=self.args.num_classes, local_rank=self.local_rank)
+
+        tbar = tqdm(test_loader, total=int(len(test_loader)), ncols=120, position=0, leave=True)
+
+        for batch_idx, batch_data in enumerate(tbar):
+            # continue
+            # image, waveform, label, img_label, vid_temporal_mask_flag, gt_temporal_mask_flag, mask_num, video_name = \
+            # batch_data # [bs, 5, 3, 224, 224], ->[bs, 5, 1, 96, 64], [bs, 10, 1, 224, 224]
+            image, waveform, pix_label, img_label, name, frame_available, mask_available = batch_data
+            mask_num = mask_available.sum().long().item()
+            B, T, C, H, W = image.shape
+            image = image.cuda(non_blocking=True)
+            waveform = waveform.cuda(non_blocking=True).view(B, T, 1, -1)
+            img_label = img_label.cuda(non_blocking=True)
+            pix_label = pix_label.cuda(non_blocking=True)
+
+            for i in range(mask_num):
+                curr_image = image[0, i, None]
+                curr_img_label = img_label[0, i]
+                curr_pix_label = pix_label[0, i]
+                curr_waveform = waveform[0, i, None]
+                curr_audio = self.preprocess_audio(curr_waveform)
+                avl_map_logits, fusion_fea, fea = \
+                    model_v_.module(curr_image, curr_audio, eval_mode=True)                
+                """
+                Prepare Metrics
+                """
+                fg_measure(avl_map_logits, curr_pix_label)
+                miou, acc = miou_measure(avl_map_logits, curr_pix_label)
+
+                uniq_id, count = curr_pix_label.unique(return_counts=True)
+                valid_id = uniq_id[count > 100]
+                if valid_id.shape[0] > 2:
+                    fg_measure_ms(avl_map_logits, curr_pix_label)
+                    miou_ms, acc_ms = miou_measure_ms(avl_map_logits, curr_pix_label)
+                    if name[0] in self.eval_list:
+                        self.vis_tool.upload_wandb_image(
+                            curr_image.cpu().detach(),
+                            curr_pix_label.cpu().detach().unsqueeze(0),
+                            avl_map_logits.cpu().detach(),
+                            torch.softmax(avl_map_logits, dim=1).cpu().detach(),
+                            status="test",
+                            folder=name[0],
+                            caption=name[0],
+                        )
+                else:
+                    miou_ms, acc_ms = miou_measure_ms.get_metric_results()
+
+                tbar.set_description(
+                    "epoch ({}) |ALL| mIoU {} Acc {} |MS| mIoU {} Acc {}".format(
+                        epoch, miou, acc, miou_ms, acc_ms
+                    )
+                )
+
+        class_list = None
+        v_miou, v_acc, v_fd, v_f1, v_f03 = get_performance(miou_measure, fg_measure, class_list=class_list)
+        v_miou_ms, v_acc_ms, v_fd_ms, v_f1_ms, v_f03_ms = get_performance(
+            miou_measure_ms, fg_measure_ms,class_list=class_list
+        )
+
+        if self.local_rank <= 0:
+            logger.success(
+                f"|ALL| mIoU: {v_miou:.4f} | acc: {v_acc:.4f} | fdr: {v_fd:.4f} | f_1: {v_f1:.4f} | f_0.3: {v_f03:.4f}"
+            )
+            logger.success(
+                f"|MS| mIoU: {v_miou_ms:.4f} | acc: {v_acc_ms:.4f} | fdr: {v_fd_ms:.4f} | f_1: {v_f1_ms:.4f} | f_0.3: {v_f03_ms:.4f}"
+            )
+            """ 
+                Plot T-SNE 
+            """
+            list_of_feature = (audio_fea_list, visual_fea_list, fusion_fea_list, bg_fea_list, target_list)
+            if v_miou > self.best_iou:
+                wandb.run.summary["best_epoch"] = epoch
+                # ALL
+                wandb.run.summary["best_miou"] = v_miou
+                wandb.run.summary["best_acc"] = v_acc
+                wandb.run.summary["best_fd"] = v_fd
+                wandb.run.summary["best_f_1"] = v_f1
+                wandb.run.summary["best_f_0.3"] = v_f03
+                # MS
+                wandb.run.summary["best_miou_ms"] = v_miou_ms
+                wandb.run.summary["best_acc_ms"] = v_acc_ms
+                wandb.run.summary["best_fd_ms"] = v_fd_ms
+                wandb.run.summary["best_f_1_ms"] = v_f1_ms
+                wandb.run.summary["best_f_0.3_ms"] = v_f03_ms
+                #
+                self.best_iou = v_miou
+                if not self.args.ignore_ckpt:
+                    self.engine.save_checkpoint(
+                        os.path.join(wandb.run.dir, "best_model.pth")
+                    )
+
+            self.vis_tool.upload_metrics(
+                {
+                    # ALL
+                    "miou": v_miou,
+                    "acc": v_acc,
+                    "fdr": v_fd,
+                    "f_1": v_f1,
+                    "f_0.3": v_f03,
+                    # MS
+                    "multi-source/miou_ms": v_miou_ms,
+                    "multi-source/acc_ms": v_acc_ms,
+                    "multi-source/fdr_ms": v_fd_ms,
+                    "multi-source/f_1_ms": v_f1_ms,
+                    "multi-source/f_0.3_ms": v_f03_ms,
+                },
+                epoch,
+            )
+        del target_list, visual_fea_list, audio_fea_list, fusion_fea_list, bg_fea_list
+        del image, waveform, pix_label, img_label, name, frame_available, mask_available
+        del curr_image, curr_audio, curr_img_label, curr_pix_label
+        del avl_map_logits, fusion_fea, fea
+        del v_miou, v_acc, v_fd, v_f1, v_f03
+        del v_miou_ms, v_acc_ms, v_fd_ms, v_f1_ms, v_f03_ms
+        return

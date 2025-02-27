@@ -34,7 +34,6 @@ C.vgg_root = "vggsound_bench/VGGSound"
 C.class_dict = None
 C.index_table = index_table_avs
 C.data_path = os.path.join(C.root_dataset_dir, C.dataset_name)
-C.vpo_data_path = os.path.join(C.root_dataset_dir, C.vpo_root)
 C.vgg_data_path = os.path.join(C.root_dataset_dir, C.vgg_root)
 C.synth_data_path = os.path.join(C.root_dataset_dir, C.vgg_root)
 
