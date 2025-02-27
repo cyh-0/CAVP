@@ -57,6 +57,7 @@ def prepare_data(df):
 class VisualDataset(Dataset):
     def __init__(self, data_frame, mode, transform=None, args=None):
         super().__init__()
+        self.args = args
         self.mode = mode
         self.transform = transform
         self.df = prepare_data(data_frame)
@@ -81,7 +82,10 @@ class VisualDataset(Dataset):
     def __getflag(self, set):
         if set == 'v1s': # data from AVSBench-object single-source subset (5s, gt is only the first annotated frame)
             vid_temporal_mask_flag = torch.Tensor([1, 1, 1, 1, 1, 0, 0, 0, 0, 0])#.bool()
-            gt_temporal_mask_flag  = torch.Tensor([1, 0, 0, 0, 0, 0, 0, 0, 0, 0])#.bool()
+            if self.mode == "train":
+                gt_temporal_mask_flag = torch.Tensor([1, 0, 0, 0, 0, 0, 0, 0, 0, 0])  # .bool()
+            else:
+                gt_temporal_mask_flag = torch.Tensor([1, 1, 1, 1, 1, 0, 0, 0, 0, 0])
         elif set == 'v1m': # data from AVSBench-object multi-sources subset (5s, all 5 extracted frames are annotated)
             vid_temporal_mask_flag = torch.Tensor([1, 1, 1, 1, 1, 0, 0, 0, 0, 0])#.bool()
             gt_temporal_mask_flag  = torch.Tensor([1, 1, 1, 1, 1, 0, 0, 0, 0, 0])#.bool()
@@ -155,6 +159,9 @@ class VisualDataset(Dataset):
 
         if self.resize_flag:
             if self.avsbench_split != "all":
+                label[(label != 255) & (label != 0)] = 1
+                
+            if self.args.setup == "avss_binary":
                 label[(label != 255) & (label != 0)] = 1
 
         return image, label, class_label, self.name_list[idx], frame_available, mask_available

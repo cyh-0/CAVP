@@ -183,7 +183,7 @@ class CAVP_TRAINER:
             shuffle_audio = waveform.clone()[shuffle_idx]
             mod_idx_map = None
             
-            if self.args.avsbench_split == "all":
+            if self.args.avsbench_split == "all" and self.args.setup != "avss_binary":
                 if epoch >= 1:
                     if_match, shuffle_img_label, mod_idx_map = self.overwrite_miss_match(
                         if_match, shuffle_img_label, img_label
